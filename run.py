@@ -12,6 +12,7 @@ from apps.config import config_dict
 from apps import create_app, db
 from flask import render_template
 from apps.OLAP.Promotion_decision_algorithm import collect, prepare_data, analyser, agir
+from apps.OLAP.Product_decision_algorithm import collectp, prepare_datap, analyserp, agirp
 # WARNING: Don't run with debug turned on in production!
 DEBUG = (os.getenv('DEBUG', 'False') == 'True')
 
@@ -38,18 +39,28 @@ if DEBUG:
     app.logger.info('DBMS             = ' + app_config.SQLALCHEMY_DATABASE_URI)
     app.logger.info('ASSETS_ROOT      = ' + app_config.ASSETS_ROOT )
 
-@app.route('/show_customers')
+@app.route('/tables.html')
 def show_customers():
     data = collect()
     data, label_encoder = prepare_data(data)
     model, X_test, y_test = analyser(data)
     results, accuracy, report = agir(model, X_test, y_test, label_encoder, data)
     results_list = results.to_dict(orient='records')
-
-    print(results_list)
     segment = 'index'
     return render_template('home/tables.html', results=results_list ,segment=segment)
 
+@app.route('/show_products')
+def show_products():
+    data = collectp()
+    data, label_encoder = prepare_datap(data)
+    model, X_test, y_test = analyserp(data)
+    resultats, accuracy, report = agirp(model, X_test, y_test, label_encoder, data)
+    results_list = resultats.to_dict(orient='records')
+    print("+++++++++++++++++++++++++++++++++++++")
+    print(results_list)
+
+    segment = 'index'
+    return render_template('home/products.html', results=results_list ,segment=segment)
 
 if __name__ == "__main__":
     app.run()
